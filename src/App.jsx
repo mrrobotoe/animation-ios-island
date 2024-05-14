@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaBell, FaPlay, FaPause } from 'react-icons/fa';
 import { IoClose } from "react-icons/io5";
@@ -11,6 +11,12 @@ export default function App() {
   const [silence, setSilence] = useState(false);
   const [timerUI, setTimerUI] = useState(false);
   const [starting, setStarting] = useState(true);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setSilence(prev => !prev)
+    }, 2000)
+  }, [silence, setSilence])
 
   return (
     <div className='w-full h-svh flex justify-center items-center pt-2'>
