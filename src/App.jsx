@@ -168,6 +168,7 @@ export default function App() {
           </button>
           <button 
             onClick={() => {
+              setHovered(true)
               setSilence(true)
               setTimerUI(false)
             }}
