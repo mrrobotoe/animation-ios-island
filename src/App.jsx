@@ -12,12 +12,6 @@ export default function App() {
   const [timerUI, setTimerUI] = useState(false);
   const [starting, setStarting] = useState(true);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setSilence(prev => !prev)
-    }, 2000)
-  }, [silence, setSilence])
-
   return (
     <div className='w-full h-svh flex justify-center items-center pt-2'>
       <motion.div className='flex w-full flex-col jusitfy-center items-center'>
@@ -167,10 +161,20 @@ export default function App() {
             onClick={() => {
               setHovered(true)
               setTimerUI(false)
+              setSilence(false)
             }}
             className="px-4 py-2 border-2 hover:bg-slate-300 rounded-full border-solid border-slate-500"
             >Ring
           </button>
+          <button 
+            onClick={() => {
+              setSilence(true)
+              setTimerUI(false)
+            }}
+            className="px-4 py-2 border-2 hover:bg-slate-300 rounded-full border-solid border-slate-500"
+            >Silence
+          </button>
+
           <button
             onClick={() => setTimerUI(true)}
             className="px-4 py-2 border-2 rounded-full hover:bg-slate-300 border-solid border-slate-500"
