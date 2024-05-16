@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaBell, FaPlay, FaPause } from 'react-icons/fa';
+import { FaBell, FaPlay, FaBellSlash, FaPause } from 'react-icons/fa';
 import { IoClose } from "react-icons/io5";
 
 import clsx from 'clsx';
@@ -10,7 +10,30 @@ export default function App() {
   const [hovered, setHovered] = useState(false);
   const [silence, setSilence] = useState(false);
   const [timerUI, setTimerUI] = useState(false);
-  const [starting, setStarting] = useState(true);
+  const [starting, setStarting] = useState(false);
+
+  const [uiTimer, setUITimer] = useState({
+    oneth: 0,
+    tenth: 0,
+    hundreth: 0,
+    thousandth: 0
+  });
+
+  useLayoutEffect(() => {
+    let timerId;
+    if (starting) {
+      timerId = setInterval(() => {
+        setUITimer( prev => ({
+          ...prev,
+          oneth: prev.oneth == 9 ? 0 : prev.oneth + 1,
+          tenth: prev.oneth == 9 ? ( prev.tenth == 5 ? 0 :++prev.tenth) : prev.tenth,
+          hundreth: (prev.tenth == 5 && prev.oneth == 9) ? ( prev.hundreth == 9 ? 0 : ++prev.hundreth) : prev.hundreth,
+          thousandth: (prev.hundreth == 9 && prev.tenth == 5 && prev.oneth == 9) ? ++prev.thousandth : prev.thousandth
+        }))
+      }, 1000)
+    }
+    return () => clearInterval(timerId);
+  }, [uiTimer, starting])
 
   return (
     <div className='w-full h-svh flex justify-center items-center pt-2'>
@@ -18,33 +41,39 @@ export default function App() {
         <motion.div className='min-h-[100px]'>
           <motion.div
             layout
-            transition={{ type: 'spring', duration: 0.5 }}
+            transition={{ type: 'spring', duration: 0.575, bounce: 0.45 }}
             style={{ borderRadius: '50px' }}
             className={clsx(
-              'h-9 bg-black flex p-1 min-w-[100px]',
+              'h-9 bg-black flex p-1 min-w-[132px]',
               hovered ? 'min-w-[158px]' : null,
               silence ? 'min-w-[179px]' : null,
               timerUI ? 'min-w-[290px] min-h-[70px]' : null
             )}
           >
           { timerUI ? (
-            <motion.div className="flex px-3 w-full items-center justify-between">
+            <motion.div className="flex px-4 w-full items-center justify-between">
               <motion.div className="flex gap-2">
                 {/* add play button and close*/}
                 <motion.button
-                  onClick={() => setStarting(!starting)}
+                  onClick={() => {
+                    if (starting)
+                    {
+                      setStarting(prev => !prev)
+                    } else {
+                      setStarting(prev => !prev)
+                    }
+                  }}
                   initial={{ opacity: 0, scale: 0.4, filter: "blur(10px)" }}
                   animate={{ opacity: 1, scale: 1, filter: "blur(0px)"}}
                   exit={{ opacity: 0, scale: 0.3, filter: "blur(10px)", transition: { duration: 0.3 } }}
                   className="min-w-[30px] p-3 rounded-full flex items-center justify-center bg-yellow-900"
                 >
-                  <AnimatePresence mode="wait">
-                    {starting ? (
+                  <AnimatePresence mode="wait" initial={false}>
+                    {!starting ? (
                         <motion.div
                           layout
                           key="play-btn"
                           layoutId="playing"
-                          onClick={() => setStarting(true)}
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.8 }}
@@ -57,7 +86,6 @@ export default function App() {
                           layout
                           key="pause-btn"
                           layoutId="pausing"
-                          onClick={() => setStarting(false)}
                           initial={{ opacity: 0, scale: 0.8 }}
                           animate={{ opacity: 1, scale: 1 }}
                           exit={{ opacity: 0, scale: 0.8 }}
@@ -69,6 +97,8 @@ export default function App() {
                   </AnimatePresence>
                 </motion.button>
                 <motion.button
+                  layout
+                  layoutId="close-btn"
                   onClick={() => setTimerUI(false)}
                   initial={{ opacity: 0, scale: 0.4, filter: "blur(10px)" }}
                   animate={{ opacity: 1, scale: 1, filter: "blur(0px)"}}
@@ -78,12 +108,55 @@ export default function App() {
                   <IoClose className="close-btn"/>
                 </motion.button>
               </motion.div>
-              <motion.div className="timer">
-                10:00
+              <motion.div
+                  initial={{ opacity: 0, scale: 0.4, filter: "blur(10px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)"}}
+                  exit={{ opacity: 0, scale: 0.3, filter: "blur(10px)", transition: { duration: 0.3 } }}
+                  className="timer"
+              >
+                  <span className="thousandth">
+                    {uiTimer.thousandth}
+                  </span>
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    <motion.span
+                      key={uiTimer.hundreth}
+                      initial={{ y: 30, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -30, opacity: 0, position: "absolute" }}
+                      transition={{ duration: 0.4 }}
+                      className="hundreth"
+                    >
+                      {uiTimer.hundreth}
+                    </motion.span>
+                  </AnimatePresence>
+                  <span>:</span>
+                  <AnimatePresence mode="popLayout" initial={false}>
+                    <motion.span
+                      key={uiTimer.tenth}
+                      initial={{ y: 30, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      exit={{ y: -30, opacity: 0, position: "absolute" }}
+                      transition={{ duration: 0.4 }}
+                      className="tenth"
+                    >
+                      {uiTimer.tenth}
+                    </motion.span>
+                  </AnimatePresence>
+                    <AnimatePresence mode="popLayout" initial={false}>
+                      <motion.span
+                        key={uiTimer.oneth}
+                        initial={{ y: 30, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -30, opacity: 0, position: "absolute" }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        {uiTimer.oneth}
+                      </motion.span>
+                    </AnimatePresence>
               </motion.div>
             </motion.div>
           ) :(
-            <AnimatePresence>
+            <AnimatePresence mode="wait">
               {hovered ? (
                 <motion.div
                   className={'ring-display'}
@@ -104,27 +177,40 @@ export default function App() {
                     transition={{ duration: 0.2}}
                     className={clsx("ringer-background p-1 flex justify-center", silence ? "ringer-background:silenced px-3" : null)}
                   >
-                    <FaBell
-                      key="ringer-icon"
-                      style={{ fontSize: "0.8rem" }}
-                      className={clsx('ring-notification', !silence ? 'ring-notification:animate' : null)}
-                    />
+                    {
+                      silence ? (
+                        <FaBellSlash
+                          key="ringer-icon"
+                          style={{ fontSize: "0.8rem" }}
+                          className={clsx('ring-notification', !silence ? 'ring-notification:animate' : null)}
+                        />
+                      ) : (
+                        <FaBell
+                          key="ringer-icon"
+                          style={{ fontSize: "0.8rem" }}
+                          className={clsx('ring-notification', !silence ? 'ring-notification:animate' : null)}
+                        />
+                      )
+                    }
                   </motion.div>
                       {
                         silence ? (
-                          <motion.p
-                            layout
-                            key="silent-ringer"
-                            layoutId="silent-ringer"
-                            initial={{ opacity: 0, scale: 0.3, filter: "blur(10px)" }}
-                            animate={{ opacity: 1, scale: 1, filter: "blur(0px)"}}
-                            exit={{ opacity: 0, scale: 0.3, filter: "blur(10px)" }}
-                            transition={{ duration: 0.2 }}
-                            className={"ring-content:silence"}
-                          >
-                            Silent
-                          </motion.p> 
+                          <AnimatePresence>
+                            <motion.p
+                              layout
+                              key="silent-ringer"
+                              layoutId="silent-ringer"
+                              initial={{ opacity: 0, scale: 0.3, filter: "blur(10px)" }}
+                              animate={{ opacity: 1, scale: 1, filter: "blur(0px)"}}
+                              exit={{ opacity: 0, scale: 0.3, filter: "blur(10px)" }}
+                              transition={{ duration: 0.2 }}
+                              className={"ring-content:silence"}
+                            >
+                              Silent
+                            </motion.p> 
+                          </AnimatePresence>
                         ) : (
+                          <AnimatePresence mode="wait">
                           <motion.p
                             layout
                             key="ringer-ring"
@@ -137,6 +223,8 @@ export default function App() {
                           >
                             Ring
                           </motion.p> 
+
+                          </AnimatePresence>
                         )
                       }              
                 </motion.div>

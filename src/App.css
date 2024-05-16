@@ -1,5 +1,6 @@
 .homepage {
   width: 100%;
+  position: relative;
   height: 100vh;
   background-color: #fff;
 }
@@ -71,10 +72,19 @@
 .timer {
   font-size: 2em;
   font-weight: lighter;
+  max-width: 83px;
+  min-width: 83px;
+  position: relative;
+  display: flex;
+  gap: 0.045em;
 }
+
 .close-btn {
   color: #fff;
   font-size: 1.5em;
+}
+
+.oneth {
 }
 
 @-webkit-keyframes ring {
